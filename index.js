@@ -3,7 +3,10 @@ import { WebSocketServer } from "ws";
 const wss = new WebSocketServer({
   port: 3000,
 });
-const endpoints = [];
+const endpoints = {
+  new: [],
+  applied: [],
+};
 
 wss.on('connection', (socket) => {
   socket.on('message', (message) => {
@@ -13,7 +16,12 @@ wss.on('connection', (socket) => {
     }
 
     if (data.action === 'addRoute') {
-      endpoints.push(data.route);
+      endpoints.new.push(data.route);
+      updateServerBehavior();
+      wss.clients.forEach((client) => {
+        // [TODO] update room lists here
+        client.send(JSON.stringify({ action: 'updateRoutes', routes: endpoints }));
+      });
     }
     wss.clients.forEach((cli) => {
       cli.send(JSON.stringify({
@@ -24,10 +32,17 @@ wss.on('connection', (socket) => {
   })
 });
 
-endpoints.forEach((route) => {
-  wss.options('connection', (socket) => {
-    if (socket.route === route) {
-
+const updateServerBehavior = () => {
+  console.log(1232131)
+  endpoints.new.forEach((endpoint) => {
+    const hasRouteHandler = wss.eventNames().includes('connection:' + endpoint);
+    if (!hasRouteHandler) {
+      console.log(12321432)
+      wss.on('connection:' + endpoint, (socket) => {
+        // [TODO] Handle messages for this route
+        socket.send(123123)
+        console.log(37)
+      });
     }
-  })
-});
+  });
+};
