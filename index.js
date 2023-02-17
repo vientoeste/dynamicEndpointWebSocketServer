@@ -33,15 +33,14 @@ wss.on('connection', (socket) => {
 });
 
 const updateServerBehavior = () => {
-  console.log(1232131)
   endpoints.new.forEach((endpoint) => {
+    // [TODO] Why called twice?
+    console.log(wss.eventNames())
     const hasRouteHandler = wss.eventNames().includes('connection:' + endpoint);
     if (!hasRouteHandler) {
-      console.log(12321432)
       wss.on('connection:' + endpoint, (socket) => {
         // [TODO] Handle messages for this route
-        socket.send(123123)
-        console.log(37)
+        socket.send(`route ${endpoint} works well`);
       });
     }
   });
